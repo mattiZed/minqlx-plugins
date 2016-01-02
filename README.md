@@ -5,7 +5,6 @@ This is a collection of plugins that I wrote for Mino's Quake Live Server Mod [m
 This is a queue plugin. Some parts of it were inspired by the original queueinfo plugin which was
 written by [walkerX](https://github.com/WalkerY/minqlbot-plugins/tree/queueinfo/plugins) for the old minqlbot.
 
-### Info
 The plugin basically shows for how long people have been waiting in specator
 mode. If a player joins a team, the name is kept for three minutes (so admins
 can track players that dont respect the queue) in the list but now displayed
@@ -18,7 +17,6 @@ subscribe/unsubscribe to.
 ## pummel.py
 This is a fun plugin.
 
-### Info
 It displays "Killer x:y Victim" message when Victim gets killed with gauntlet
 and stores the information in REDIS DB
 
