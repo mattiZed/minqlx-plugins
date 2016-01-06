@@ -19,11 +19,11 @@ class pummel(minqlx.Plugin):
         
         self.add_command("pummel", self.cmd_pummel)
         
-    def handle_kill( self, victim, killer, data ):
+    def handle_kill(self, victim, killer, data):
         if data["MOD"] == "GAUNTLET" and self.game.state == "in_progress":
             self.play_sound("sound/vo_evil/humiliation1")
             
-            self.db.sadd(PLAYER_KEY.format(killer.steam_id) + ":pummeled", str(victim.steam_id) )
+            self.db.sadd(PLAYER_KEY.format(killer.steam_id) + ":pummeled", str(victim.steam_id))
             self.db.incr(PLAYER_KEY.format(killer.steam_id) + ":pummeled:" + str(victim.steam_id))
     
             killer_score = self.db[PLAYER_KEY.format(killer.steam_id) + ":pummeled:" + str(victim.steam_id)]
@@ -31,11 +31,11 @@ class pummel(minqlx.Plugin):
             if PLAYER_KEY.format(victim.steam_id) + ":pummeled:" + str(killer.steam_id) in self.db:
                 victim_score = self.db[PLAYER_KEY.format(victim.steam_id) + ":pummeled:" + str(killer.steam_id)]
             
-            msg = "^1PUMMEL!^7 {} ^1{}^7:^1{}^7 {}".format( killer.name, killer_score, victim_score, victim.name )
-            self.msg( msg )
+            msg = "^1PUMMEL!^7 {} ^1{}^7:^1{}^7 {}".format(killer.name, killer_score, victim_score, victim.name)
+            self.msg(msg)
     
-    def cmd_pummel( self, player, msg, channel ):
-        pummels = self.db.smembers( PLAYER_KEY.format(player.steam_id) + ":pummeled" )
+    def cmd_pummel(self, player, msg, channel):
+        pummels = self.db.smembers(PLAYER_KEY.format(player.steam_id) + ":pummeled")
         players = self.teams()["spectator"] + self.teams()["red"] + self.teams()["blue"]
         
         msg = ""
@@ -45,7 +45,7 @@ class pummel(minqlx.Plugin):
                     count = self.db[PLAYER_KEY.format(player.steam_id) + ":pummeled:" + p]
                     msg +=  pl.name + ": ^1" + count + "^7 "
         if msg == "":
-            self.msg( "{} has not pummeled anybody on this server.".format(player) )
+            self.msg("{} has not pummeled anybody on this server.".format(player))
         else:
-            self.msg( "^1NAKED ^7DB >> Pummel Stats for {}:".format(player) )
-            self.msg( msg )
+            self.msg("^1NAKED ^7DB >> Pummel Stats for {}:".format(player))
+            self.msg(msg)
