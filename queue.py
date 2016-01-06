@@ -27,76 +27,76 @@ class queue(minqlx.Plugin):
         self.add_command("here", self.cmd_playing)
 
         # Minimum time to play before a player gets removed from the queue (3m)
-        self.RemPending_Time = 180
+        self.RemPending_Time    = 180
+        self.setAFK_Perm        = 2
         self._queue = []
         self._afk   = []        
         self.initialize()
     
-    def initialize( self ):
+    def initialize(self):
         '''Puts spectators into queue when the plugin is loaded.'''
         specs = self.teams()["spectator"]
         for spec in specs:
             self.add(spec)
             time.sleep(0.01)
     
-    ## Basic List Handling ( Queue and AFK )
-    def add( self, player, pos=-1 ):
+    ## Basic List Handling (Queue and AFK)
+    def add(self, player, pos=-1):
         '''Safely adds players to the queue'''
-        slot = {"name": player.name, "player" : player, "joinTime" : datetime.datetime.now() }
+        slot = {"name": player.name, "player" : player, "joinTime" : datetime.datetime.now()}
         if pos == -1:
-            self._queue.append( slot )
+            self._queue.append(slot)
         else:
-            self._queue.insert( pos, slot )
+            self._queue.insert(pos, slot)
     
-    def rem( self, player ):
+    def rem(self, player):
         '''Safely removes players from the queue'''
         for item in self._queue:
             if item["player"] == player:
                 self._queue.remove(item)
-                
-    def remAFK( self, player ):
+    
+    def remAFK(self, player):
         '''Safely removes players from afk list'''
         for item in self._afk:
             if item["player"] == player:
                 self._afk.remove(item)
     
-    def inqueue( self, player ):
+    def inqueue(self, player):
         '''Returns True if player is in queue'''
         for item in self._queue:
             if item["player"] == player:
                 return True
         return False
     
-    def inafk( self, player ):
+    def inafk(self, player):
         '''Returns True if player is in AFK'''
         for item in self._afk:
             if item["player"] == player:
                 return True
         return False
     
-    def clLists( self ):
+    def clLists(self):
         '''Testing showed that sometimes players remain in the queue even 
         if they left the server long time ago. I built this to clean the lists.
         '''
         players = self.teams()["spectator"] + self.teams()["red"] + self.teams()["blue"]
-        
         for pl in self._queue:
             if pl["player"] not in players:
-                self.rem( pl["player"] )
-    
+                self.rem(pl["player"])
+                
         for pl in self._afk:
             if pl["player"] not in players:
-                self.remAFK( pl["player"] )
+                self.remAFK(pl["player"])
     
     ## Queue Removal Handling
-    def setRemPending( self, player ):
+    def setRemPending(self, player):
         '''Set pending removal'''
         for item in self._queue:
             if item["player"] == player:
                 item["RemPending"] = True
                 item["RemPendingTime"] = datetime.datetime.now()
     
-    def clRemPending( self, player ):
+    def clRemPending(self, player):
         '''Clear pending removal'''
         for item in self._queue:
             if item["player"] == player:
@@ -104,7 +104,7 @@ class queue(minqlx.Plugin):
                     del item["RemPending"]
                     del item["RemPendingTime"]
     
-    def isRemPending( self, player ):
+    def isRemPending(self, player):
         '''Returns True if player is pending for removal from the queue'''
         for item in self._queue:
             if item["player"] == player:
@@ -113,54 +113,54 @@ class queue(minqlx.Plugin):
                 else:
                     return False
     
-    def RemPending( self ):
+    def RemPending(self):
         '''Removes players from the queue when they are flagged for removal'''
         qcopy = self._queue.copy()
         for item in qcopy:
             if "RemPending" in item.keys():
                 delta = datetime.datetime.now() - item["RemPendingTime"]
                 if delta.seconds > self.RemPending_Time:
-                    self.rem( item["player"] )
+                    self.rem(item["player"])
     
     ## AFK Handling
-    def setAFK( self, player ):
+    def setAFK(self, player):
         '''Returns True if player's state could be set to AFK'''
-        if self.isRemPending( player ):
+        if self.isRemPending(player):
             return False
-        for i in range( len( self._queue ) ):
+        for i in range(len(self._queue)):
             if self._queue[i]["player"] == player:
-                self._afk.append( self._queue.pop( i ) )
+                self._afk.append(self._queue.pop( i ))
                 return True
         return False
     
-    def setPlaying( self, player ):
+    def setPlaying(self, player):
         '''Returns True if player's state could be set to AVAILABLE'''
-        for i in range( len( self._afk ) ):
+        for i in range(len(self._afk)):
             if self._afk[i]["player"] == player:
-                self._queue.append( self._afk.pop( i ) )
+                self._queue.append(self._afk.pop( i ))
                 return True
         return False
     
     ## Plugin Handles and Commands
-    def handle_player_connect( self, player ):
-        if not self.inqueue( player ):
+    def handle_player_connect(self, player):
+        if not self.inqueue(player):
             self.add(player)
     
-    def handle_player_disconnect( self, player, reason ):
-        self.setPlaying( player )
+    def handle_player_disconnect(self, player, reason):
+        self.setPlaying(player)
         self.rem(player)
     
-    def handle_team_switch( self, player, old_team, new_team ):
+    def handle_team_switch(self, player, old_team, new_team):
         if new_team == "spectator":
-            if not self.inqueue( player ):
-                self.add( player )
+            if not self.inqueue(player):
+                self.add(player)
             else:
-               self.clRemPending( player )
+               self.clRemPending(player)
         elif new_team != "spectator":
-            self.setPlaying( player )
-            self.setRemPending( player )
+            self.setPlaying(player)
+            self.setRemPending(player)
     
-    def cmd_lq( self, player, msg, channel ):
+    def cmd_lq(self, player, msg, channel):
         self.clLists()
         self.RemPending()
         
@@ -179,11 +179,11 @@ class queue(minqlx.Plugin):
                 else:
                     waiting_time = "^1{}s^7".format(seconds)
                 
-                if self.isRemPending( item["player"] ):
+                if self.isRemPending(item["player"]):
                     msg += item["name"] + ": " + waiting_time + "^2*^7 "
                 else:
                     msg += item["name"] + ": " + waiting_time + " "
-        channel.reply( msg )
+        channel.reply(msg)
         
         if self._afk:
             namesbytime = sorted(self._afk, key = lambda item: item["joinTime"])
@@ -201,16 +201,25 @@ class queue(minqlx.Plugin):
                 
                 msg += item["name"] + ": " + waiting_time + " "
             
-            channel.reply( msg )
+            channel.reply(msg)
     
-    def cmd_afk( self, player, msg, channel ):
-        if self.setAFK( player ):
-            player.tell( "^7Your status has been set to ^3AFK^7." )
+    def cmd_afk(self, player, msg, channel):
+        if len(msg) > 1:
+            if self.db.has_permission(player, self.setAFK_Perm):
+                guy = self.find_player(msg[1])[0]
+                if self.setAFK(guy):
+                    player.tell("^7Status for {} has been set to ^3AFK^7.".format(guy.name))
+                    return minqlx.RET_STOP_ALL
+                else:
+                    player.tell("Couldn't set status for {} to AFK.".format(guy.name))
+                    return minqlx_RET_STOP_ALL
+        if self.setAFK(player):
+            player.tell("^7Your status has been set to ^3AFK^7.")
         else:
-            player.tell( "^7Couldn't set your status to AFK." )
+            player.tell("^7Couldn't set your status to AFK.")
 
-    def cmd_playing( self, player, msg, channel ):
-        if self.setPlaying( player ):
-            player.tell( "^7Your status has been set to ^2AVAILABLE^7." )
+    def cmd_playing(self, player, msg, channel):
+        if self.setPlaying(player):
+            player.tell("^7Your status has been set to ^2AVAILABLE^7.")
         else:
-            player.tell( "^7Couldn't set your status to AVAILABLE." )
+            player.tell("^7Couldn't set your status to AVAILABLE.")
