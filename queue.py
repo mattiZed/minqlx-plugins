@@ -25,12 +25,12 @@ class queue(minqlx.Plugin):
         self.add_command(("q", "queue"), self.cmd_lq)
         self.add_command("afk", self.cmd_afk)
         self.add_command("here", self.cmd_playing)
-
+        
         # Minimum time to play before a player gets removed from the queue (3m)
         self.RemPending_Time    = 180
         self.setAFK_Perm        = 2
         self._queue = []
-        self._afk   = []        
+        self._afk   = []
         self.initialize()
     
     def initialize(self):
