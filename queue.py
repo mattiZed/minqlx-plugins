@@ -17,6 +17,8 @@ import minqlx
 import datetime
 import time
 
+_tag_key = "minqlx:players:{}:clantag"
+
 class queue(minqlx.Plugin):
     def __init__(self):
         self.add_hook("player_connect", self.handle_player_connect)
@@ -26,12 +28,14 @@ class queue(minqlx.Plugin):
         self.add_command("afk", self.cmd_afk)
         self.add_command("here", self.cmd_playing)
         
-        # Minimum time to play before a player gets removed from the queue (3m)
-        self.RemPending_Time    = 180
-        self.setAFK_Perm        = 2
         self._queue = []
         self._afk   = []
         self.initialize()
+        
+        # Minimum time to play before a player gets removed from the queue (3m)
+        self.set_cvar_once("qlx_queueRemPendingTime", "180")
+        self.set_cvar_once("qlx_queueSetAfkPermission", "2")
+        self.set_cvar_once("qlx_queueAFKTag", "^3AFK")
     
     def initialize(self):
         '''Puts spectators into queue when the plugin is loaded.'''
@@ -119,7 +123,7 @@ class queue(minqlx.Plugin):
         for item in qcopy:
             if "RemPending" in item.keys():
                 delta = datetime.datetime.now() - item["RemPendingTime"]
-                if delta.seconds > self.RemPending_Time:
+                if delta.seconds > self.get_cvar("qlx_queueRemPendingTime", int):
                     self.rem(item["player"])
     
     ## AFK Handling
@@ -141,6 +145,31 @@ class queue(minqlx.Plugin):
                 return True
         return False
     
+    def setAFKTag(self, player):
+        '''Sets the player's clantag to AFK'''
+        index = 529 + player.id
+        cs  = minqlx.parse_variables(minqlx.get_configstring(index), ordered=True)
+        cs["xcn"]   = self.get_cvar("qlx_queueAFKTag")
+        cs["cn"]    = self.get_cvar("qlx_queueAFKTag")
+        new_cs      = "".join(["\\{}\\{}".format(key, cs[key]) for key in cs])
+        minqlx.set_configstring(index, new_cs)
+    
+    def clAFKTag(self, player):
+        '''Sets player's clantag again if there was any'''
+        index = 529 + player.id
+        tag_key = _tag_key.format(player.steam_id)
+        
+        cs = minqlx.parse_variables(minqlx.get_configstring(index), ordered=True)
+        cs["xcn"]   = ""
+        cs["cn"]    = ""
+        
+        if tag_key in self.db:
+            cs["xcn"]   = self.db[tag_key]
+            cs["cn"]    = self.db[tag_key]
+        
+        new_cs = "".join(["\\{}\\{}".format(key, cs[key]) for key in cs])
+        minqlx.set_configstring(index, new_cs)
+    
     ## Plugin Handles and Commands
     def handle_player_connect(self, player):
         if not self.inqueue(player):
@@ -148,6 +177,7 @@ class queue(minqlx.Plugin):
     
     def handle_player_disconnect(self, player, reason):
         self.setPlaying(player)
+        self.clAFKTag(player)
         self.rem(player)
     
     def handle_team_switch(self, player, old_team, new_team):
@@ -158,6 +188,7 @@ class queue(minqlx.Plugin):
                self.clRemPending(player)
         elif new_team != "spectator":
             self.setPlaying(player)
+            self.clAFKTag(player)
             self.setRemPending(player)
     
     def cmd_lq(self, player, msg, channel):
@@ -205,21 +236,24 @@ class queue(minqlx.Plugin):
     
     def cmd_afk(self, player, msg, channel):
         if len(msg) > 1:
-            if self.db.has_permission(player, self.setAFK_Perm):
+            if self.db.has_permission(player, self.get_cvar("qlx_queueSetAfkPermission", int)):
                 guy = self.find_player(msg[1])[0]
                 if self.setAFK(guy):
+                    self.setAFKTag(guy)
                     player.tell("^7Status for {} has been set to ^3AFK^7.".format(guy.name))
                     return minqlx.RET_STOP_ALL
                 else:
                     player.tell("Couldn't set status for {} to AFK.".format(guy.name))
                     return minqlx_RET_STOP_ALL
         if self.setAFK(player):
+            self.setAFKTag(player)
             player.tell("^7Your status has been set to ^3AFK^7.")
         else:
             player.tell("^7Couldn't set your status to AFK.")
 
     def cmd_playing(self, player, msg, channel):
         if self.setPlaying(player):
+            self.clAFKTag(player)
             player.tell("^7Your status has been set to ^2AVAILABLE^7.")
         else:
             player.tell("^7Couldn't set your status to AVAILABLE.")
