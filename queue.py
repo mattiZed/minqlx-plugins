@@ -24,6 +24,7 @@ class queue(minqlx.Plugin):
         self.add_hook("player_connect", self.handle_player_connect)
         self.add_hook("player_disconnect", self.handle_player_disconnect)
         self.add_hook("team_switch", self.handle_team_switch)
+        self.add_hook("set_configstring", self.handle_configstring)
         self.add_command(("q", "queue"), self.cmd_lq)
         self.add_command("afk", self.cmd_afk)
         self.add_command("here", self.cmd_playing)
@@ -145,30 +146,20 @@ class queue(minqlx.Plugin):
                 return True
         return False
     
+    @minqlx.next_frame
     def setAFKTag(self, player):
         '''Sets the player's clantag to AFK'''
-        index = 529 + player.id
-        cs  = minqlx.parse_variables(minqlx.get_configstring(index), ordered=True)
-        cs["xcn"]   = self.get_cvar("qlx_queueAFKTag")
-        cs["cn"]    = self.get_cvar("qlx_queueAFKTag")
-        new_cs      = "".join(["\\{}\\{}".format(key, cs[key]) for key in cs])
-        minqlx.set_configstring(index, new_cs)
+        player.clan = self.get_cvar("qlx_queueAFKTag")
     
+    @minqlx.next_frame
     def clAFKTag(self, player):
         '''Sets player's clantag again if there was any'''
-        index = 529 + player.id
         tag_key = _tag_key.format(player.steam_id)
-        
-        cs = minqlx.parse_variables(minqlx.get_configstring(index), ordered=True)
-        cs["xcn"]   = ""
-        cs["cn"]    = ""
-        
+        tag = ""
         if tag_key in self.db:
-            cs["xcn"]   = self.db[tag_key]
-            cs["cn"]    = self.db[tag_key]
+            tag = self.db[tag_key]
         
-        new_cs = "".join(["\\{}\\{}".format(key, cs[key]) for key in cs])
-        minqlx.set_configstring(index, new_cs)
+        player.clan = tag
     
     ## Plugin Handles and Commands
     def handle_player_connect(self, player):
@@ -190,6 +181,17 @@ class queue(minqlx.Plugin):
             self.setPlaying(player)
             self.clAFKTag(player)
             self.setRemPending(player)
+    
+    def handle_configstring(self, index, value):
+        if not value:
+            return
+        
+        elif 529 <= index < 529 + 64:
+            player = self.player(index - 529)
+            
+            if self.inafk(player):
+                self.setAFKTag(player)
+                return minqlx.RET_STOP 
     
     def cmd_lq(self, player, msg, channel):
         self.clLists()
@@ -244,7 +246,7 @@ class queue(minqlx.Plugin):
                     return minqlx.RET_STOP_ALL
                 else:
                     player.tell("Couldn't set status for {} to AFK.".format(guy.name))
-                    return minqlx_RET_STOP_ALL
+                    return minqlx.RET_STOP_ALL
         if self.setAFK(player):
             self.setAFKTag(player)
             player.tell("^7Your status has been set to ^3AFK^7.")
