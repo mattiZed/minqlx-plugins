@@ -168,7 +168,6 @@ class queue(minqlx.Plugin):
     
     def handle_player_disconnect(self, player, reason):
         self.setPlaying(player)
-        self.clAFKTag(player)
         self.rem(player)
     
     def handle_team_switch(self, player, old_team, new_team):
