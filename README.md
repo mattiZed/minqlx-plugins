@@ -23,3 +23,10 @@ and stores the information in REDIS DB
 Players can display their "pummels" via !pummel - this works only for victims
 that are on the server at the same time, otherwise we could just spit out
 steamIDs.
+
+## uneventeams.py
+This is plugin that takes care of uneven teams.
+
+If uneven teams occur, this plugin finds the player that has played the least amount of time since he connected. The information stays persistant over mapchanges etc. In this context, playing time means for how long the players have been in a team in an ACTIVE GAME, no matter how long they were alive, though.
+
+Some parts of this plugin were inspired by this autospec plugin written by [iou(onegirl)](https://github.com/dsverdlo/minqlx-plugins/blob/master/autospec.py), but the decision mechanism that takes care of who will be "punished" is a different approach.
