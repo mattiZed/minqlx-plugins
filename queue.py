@@ -1,6 +1,14 @@
-# Copyright (C) mattiZed (github) aka mattiZed (ql)
+# This is an extension plugin  for minqlx.
+# Copyright (C) 2016 mattiZed (github) aka mattiZed (ql)
 
-# This is a queue plugin written for Mino's Quake Live Server Mod minqlx
+# You can redistribute it and/or modify it under the terms of the 
+# GNU General Public License as published by the Free Software Foundation, 
+# either version 3 of the License, or (at your option) any later version.
+
+# You should have received a copy of the GNU General Public License
+# along with minqlx. If not, see <http://www.gnu.org/licenses/>.
+
+# This is a queue plugin written for Mino's Quake Live Server Mod minqlx.
 # Some parts of it were inspired by the original queueinfo plugin which was
 # written by WalkerX (github) for the old minqlbot.
 
