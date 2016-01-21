@@ -89,11 +89,11 @@ class uneventeams(minqlx.Plugin):
         players = self.teams()
         
         for p in players["red"]:
-            self._players[p.steam_id] = timer(running=False)
+            self._players[p.steam_id] = timer()
         for p in players["blue"]:
-            self._players[p.steam_id] = timer(running=False)
+            self._players[p.steam_id] = timer()
         for p in players["spectator"]:
-            self._players[p.steam_id] = timer(running=False)
+            self._players[p.steam_id] = timer()
     
     def handle_round_countdown(self, round_number):
         '''
@@ -139,7 +139,7 @@ class uneventeams(minqlx.Plugin):
         else:
             guy = self.player(self.find_lastjoined("blue"))
         
-        self.slay(guy)
+        guy.health = 0
         self.msg("^1Uneven Teams^7 >> {}^7 was slain.".format(guy.name))
     
     def handle_round_end(self, round_number):
@@ -148,10 +148,7 @@ class uneventeams(minqlx.Plugin):
         '''
         teams = self.teams()
         
-        for p in teams["red"]:
-            self._players[p.steam_id].stop()
-        
-        for p in teams["blue"]:
+        for p in teams["red"] + teams["blue"]:
             self._players[p.steam_id].stop()
     
     def handle_game_end(self, data):
@@ -181,7 +178,7 @@ class uneventeams(minqlx.Plugin):
         '''
             Equip every new player with a timer instance.
         '''
-        self._players[player.steam_id] = timer(running=False)
+        self._players[player.steam_id] = timer()
     
     def cmd_playertimes(self, player, msg, channel):
         # This one is mostly for debugging.
