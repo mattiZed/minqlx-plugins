@@ -1,8 +1,16 @@
-# Copyright (C) mattiZed (github) aka mattiZed (ql)
+# This is an extension plugin  for minqlx.
+# Copyright (C) 2016 mattiZed (github) aka mattiZed (ql)
 
-# This is a fun plugin written for Mino's Quake Live Server Mod minqlx
+# You can redistribute it and/or modify it under the terms of the 
+# GNU General Public License as published by the Free Software Foundation, 
+# either version 3 of the License, or (at your option) any later version.
+
+# You should have received a copy of the GNU General Public License
+# along with this plugin. If not, see <http://www.gnu.org/licenses/>.
+
+# This is a fun plugin written for Mino's Quake Live Server Mod minqlx.
 # It displays "Killer x:y Victim" message when Victim gets killed with gauntlet
-# and stores the information in REDIS DB
+# and stores the information within REDIS DB
 
 # Players can display their "pummels" via !pummel - this works only for victims
 # that are on the server on the same time, Otherwise we could just spit out
