@@ -1,5 +1,5 @@
 # minqlx-plugins
-This is a collection of plugins that I wrote for Mino's Quake Live Server Mod [minqlx](https://github.com/MinoMino/minqlx). 
+This is a collection of plugins that I wrote for Mino's Quake Live Server Mod [minqlx](https://github.com/MinoMino/minqlx). If you run into problems or find any bugs, you can contact me via IRC: [Mino's Channel on Quakenet](http://webchat.quakenet.org/?channels=minqlbot) or [NAKED QL on Quakenet](http://webchat.quakenet.org/?channels=naked-ql); Look out for "mattiZed". I may not respond immediately but I will sure read your messages.
 
 ## queue.py
 This is a queue plugin. Some parts of it were inspired by the original queueinfo plugin which was
