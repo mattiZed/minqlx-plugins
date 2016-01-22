@@ -12,7 +12,7 @@
 # Some parts of it were inspired by the original queueinfo plugin which was
 # written by WalkerX (github) for the old minqlbot.
 
-# The plugin basically shows for how long people have been waiting in specator
+# The plugin basically shows for how long people have been waiting in spectator
 # mode. If a player joins a team, the name is kept for three minutes (so admins
 # can track players that dont respect the queue) in the list but now displayed
 # with an asterisk to show that the player has left the queue and will soon be
