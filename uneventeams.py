@@ -17,7 +17,8 @@
 # he was alive though!
 
 # For now, the plugin warns that teams are uneven on event round_countdown and 
-# slays the player who was in-game the shortest on event round_start.
+# slays or move to spectators the player who was in-game the shortest 
+# on event round_start.
 
 # I wrote a little timer module that can be used to start and stop timers.
 # If a timer was stopped yet not cleared 
@@ -82,6 +83,11 @@ class uneventeams(minqlx.Plugin):
         
         self.initialize()
         
+        # Slay (0) or move to spectators (1) when teams are uneven
+        self.set_cvar_once("qlx_unevenTeamsAction", "0")
+        # Minimum amount of players in red + blue for uneventeams to work
+        self.set_cvar_once("qlx_unevenTeamsMinPlayers", "2")
+        
     def initialize(self):
         '''
             Equip all players with timers on plugin load.
@@ -100,8 +106,13 @@ class uneventeams(minqlx.Plugin):
             Check if teams are uneven and if so, warn the player with the 
             least amount of time played.
         '''
+        min_players = self.get_cvar("qlx_unevenTeamsMinPlayers", int)
+        
         teams = self.teams()
-        if len(teams["red"] + teams["blue"]) % 2 == 0:
+        
+        if len(teams["red"]) == len(teams["blue"]):
+            return
+        if len(teams["red"] + teams["blue"]) < min_players:
             return
         
         if len(teams["red"]) > len(teams["blue"]):
@@ -115,6 +126,9 @@ class uneventeams(minqlx.Plugin):
             Start (or resume) the timers for the players in RED and BLUE.
             Check also if we need to slay someone.
         '''
+        min_players = self.get_cvar("qlx_unevenTeamsMinPlayers", int)
+        action = self.get_cvar("qlx_unevenTeamsAction", int)
+        
         teams = self.teams()
         
         for p in teams["red"]:
@@ -128,20 +142,24 @@ class uneventeams(minqlx.Plugin):
                 self.player(p)
             except:
                 del self._players[p]
-
-        if len(teams["red"] + teams["blue"]) % 2 == 0:
+        
+        if len(teams["red"]) == len(teams["blue"]):
             return
-        if len(teams["red"] + teams["blue"]) == 1:
+        if len(teams["red"] + teams["blue"]) < min_players:
             return
-            
+        
         if len(teams["red"]) > len(teams["blue"]):
             guy = self.player(self.find_lastjoined("red"))
         else:
             guy = self.player(self.find_lastjoined("blue"))
         
-        guy.health = 0
-        self.msg("^1Uneven Teams^7 >> {}^7 was slain.".format(guy.name))
-    
+        if action == 0:
+            guy.health = 0
+            self.msg("^1Uneven Teams^7 >> {}^7 was slain.".format(guy.name))
+        if action == 1:
+            guy.put("spectator")
+            self.msg("^1Uneven Teams^7 >> {}^7 was moved to spectators.".format(guy.name))
+        
     def handle_round_end(self, round_number):
         '''
             The round is over, stop the players' timers.

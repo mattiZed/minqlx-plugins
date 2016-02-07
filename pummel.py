@@ -44,7 +44,7 @@ class pummel(minqlx.Plugin):
     
     def cmd_pummel(self, player, msg, channel):
         pummels = self.db.smembers(PLAYER_KEY.format(player.steam_id) + ":pummeled")
-        players = self.teams()["spectator"] + self.teams()["red"] + self.teams()["blue"]
+        players = self.teams()["spectator"] + self.teams()["red"] + self.teams()["blue"] + self.teams()["free"]
         
         msg = ""
         for p in pummels:
@@ -55,5 +55,5 @@ class pummel(minqlx.Plugin):
         if msg == "":
             self.msg("{} has not pummeled anybody on this server.".format(player))
         else:
-            self.msg("^1NAKED ^7DB >> Pummel Stats for {}:".format(player))
+            self.msg("Pummel Stats for {}:".format(player))
             self.msg(msg)
