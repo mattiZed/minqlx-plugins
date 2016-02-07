@@ -187,6 +187,9 @@ class uneventeams(minqlx.Plugin):
         '''
         if new_team == "spectator":
             self._players[player.steam_id].stop()
+        
+        if new_team == "red" or new_team == "blue":
+            self._players[player.steam_id].start()
             
     def handle_player_disconnect(self, player, reason):
         if player.steam_id in self._players.keys():
