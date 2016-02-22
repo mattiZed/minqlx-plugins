@@ -194,7 +194,10 @@ class queue(minqlx.Plugin):
             return
         
         elif 529 <= index < 529 + 64:
-            player = self.player(index - 529)
+            try:
+                player = self.player(index - 529)
+            except minqlx.NonexistentPlayerError:
+                return
             
             if self.inafk(player):
                 self.setAFKTag(player)
