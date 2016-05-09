@@ -33,6 +33,8 @@
 
 import minqlx
 import datetime
+import time
+import threading
 
 class timer():
     def __init__(self, running=False):
@@ -187,19 +189,22 @@ class uneventeams(minqlx.Plugin):
         '''
         if new_team == "spectator":
             self._players[player.steam_id].stop()
+            self.deferred_removing(player, self._players[player.steam_id].elapsed())
         
         if new_team == "red" or new_team == "blue":
             self._players[player.steam_id].start()
             
     def handle_player_disconnect(self, player, reason):
         if player.steam_id in self._players.keys():
-            del self._players[player.steam_id]
+            self._players[player.steam_id].stop()
+            self.deferred_removing(player, self._players[player.steam_id].elapsed())
     
     def handle_player_connect(self, player):
         '''
             Equip every new player with a timer instance.
         '''
-        self._players[player.steam_id] = timer()
+        if player.steam_id not in self._players.keys():
+            self._players[player.steam_id] = timer()
     
     def cmd_playertimes(self, player, msg, channel):
         # This one is mostly for debugging.
@@ -237,3 +242,24 @@ class uneventeams(minqlx.Plugin):
         namesbytime = sorted(bigger_team, key = lambda item: bigger_team[item])
         return namesbytime[0]
         
+    @minqlx.thread
+    def deferred_removing(self, player, old_elapsed):
+        '''
+            Deffered removing player timer after 180 seconds
+            or resetting it if player didn't joined teams, and currently spectating
+        '''
+        @minqlx.next_frame
+        def removing():
+            players = self.teams()["red"] + self.teams()["blue"] + self.teams()["spectator"]
+            
+            if player in players:
+                if self._players[player.steam_id].elapsed() == old_elapsed:
+                    self._players[player.steam_id] = timer()
+            else:
+                del self._players[player.steam_id]
+            
+        
+        time.sleep(180)
+        
+        if player.steam_id in self._players.keys():
+            removing()
